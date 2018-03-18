@@ -1,0 +1,56 @@
+{% extends "task/base.html" %}
+
+{% block javascript %}
+    function login() {
+        var username = document.getElementById('id_username').value;
+        var password  = document.getElementById('id_password').value;
+
+        $.ajax({
+            url : "{% url 'authorization' %}",
+            type : "POST",
+            data : {
+                "username": username,
+                "password": password,
+                "csrfmiddlewaretoken": "{{ csrf_token }}"
+            }
+        }).done(function(data) {
+            if (data == "fine") {
+                window.location = "{% url 'index' %}";
+            } 
+            else if (data == "bad") {
+                document.getElementById('log_err').innerHTML='Вы ввели неверный логин или пароль';
+            }
+            else if (data == "inactive") {
+                document.getElementById('inactive').innerHTML='Данный аккаунт не активирован';
+            }
+        });
+    }
+{% endblock %}
+
+{% block content %}
+
+    <h2>Авторизация</h2><br>
+    <div id ='log_err'></div>
+    
+    <form method="POST" >
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>Логин</td>
+            </tr>
+            <tr>
+                <td>{{ form.username }}</td>  
+            </tr>
+            <tr>
+                <td>Пароль</td>
+            </tr>
+                <td>{{ form.password }}</td>
+            </tr>
+        </table>
+        <input type="button" value="Войти" onclick="login();"/>
+        <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+    <a href="{% url 'register' %}">Зарегистрироваться</a> 
+
+    
+{% endblock %}

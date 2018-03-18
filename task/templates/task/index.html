@@ -1,0 +1,60 @@
+{% extends 'task/base.html' %}
+
+{% block javascript %}
+    function send_admin() {
+        var email_from = document.getElementById('id_email_from').value;
+        var email_text  = document.getElementById('id_text').value;
+        if ((email_from != "") && (email_text != "")) {
+            document.getElementById('id_email_from').value="";
+            document.getElementById('id_text').value="";
+            document.getElementById('log_err').innerHTML='Отправляем письмо администратору';
+            $.ajax({
+                url : "{% url 'index' %}",
+                type : "POST",
+                data : {
+                    "email_from": email_from,
+                    "email_text": email_text,
+                    "csrfmiddlewaretoken": "{{ csrf_token }}"
+                }
+            }).done(function(data) {
+                if (data == "fine") {
+                    document.getElementById('log_err').innerHTML='Письмо администратору отправлено';
+
+                } 
+                else if (data == "bad") {
+                    document.getElementById('log_err').innerHTML='Не удалось отправить письмо';
+                }
+            });
+        }
+    }
+{% endblock %}
+
+{% block content %}
+    {% if user.is_authenticated %}
+        {{ user.username }}
+        <a href="{% url 'logout' %}">Выйти</a> 
+        <h2>Отправка письма администратору</h2>
+        <div id ='log_err'></div>
+        <form method="POST" class="post-form">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td>Эл. Почта</td>
+                </tr>
+                <tr>
+                    <td><input id = "id_email_from" type="email"></td>
+                </tr>
+                <tr>
+                    <td>Сообщение</td>
+                </tr>
+                <tr>
+                    <td><textarea name="text" cols="40" rows="10" required="" id="id_text"></textarea></td>
+                </tr>
+            </table>
+            <input type="button" value="Отправить" onclick="send_admin();"/>
+        </form>
+    {% else %}
+        <a href="{% url 'authorization' %}">Войти</a><br>
+        <a href="{% url 'register' %}">Зарегистрироваться</a> 
+    {% endif %}
+{% endblock %}>

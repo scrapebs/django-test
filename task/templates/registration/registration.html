@@ -1,0 +1,63 @@
+{% extends "task/base.html" %}
+
+{% block javascript %}
+    function registration() {
+    	var username = document.getElementById('id_username').value;
+        var password = document.getElementById('id_password').value;
+        var password2 = document.getElementById('id_password2').value;
+        document.getElementById('log_err').innerHTML ='';
+        if(password != password2)
+        	document.getElementById('log_err').innerHTML='Введенные Вами пароли не совпадают';
+        else {
+	        $.ajax({
+	            url : "{% url 'register' %}",
+	            type : "POST",
+	            data : {
+	                "username": username,
+	                "password": password,
+	                "password2": password2,
+	                "csrfmiddlewaretoken": "{{ csrf_token }}"
+	            }
+	        }).done(function(data) {
+            if (data == "fine") {
+                window.location = "{% url 'index' %}";
+            } 
+            else if (data == "bad") {
+                document.getElementById('log_err').innerHTML='Логин занят';
+            }
+        });
+        }
+    }
+{% endblock %}
+
+{% block content %}
+
+	<h2>Регистрация</h2>
+	<div id ='log_err'></div>
+	<form method="post">
+		{% csrf_token %}
+		<table>
+	        <tr>
+	            <td>Логин</td>
+	        </tr>
+	        <tr>
+	            <td>{{ form.username }}</td>
+	        </tr>
+	        <tr>
+	            <td>Пароль</td>
+	        </tr>
+	            <td>{{ form.password }}</td>
+	        </tr>
+	        <tr>
+	             <td>Подтверждение пароля</td>
+	        </tr>
+	        </tr>
+	            <td>{{ form.password2 }}</td>
+	        </tr>
+
+	    </table>
+	    <input type="button" value="Зарегистрироваться" onclick="registration();"/>
+	    <input type="hidden" name="next" value="{{ next }}" />
+	</form>
+
+{% endblock %}
